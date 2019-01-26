@@ -233,9 +233,15 @@ int main(int argc, char *argv[]){
     // Send the initial information - name and other stuff
     // todo check for errors.
     buffer_TRS = strcat(buffer_TRS,Whoami);
-    buffer_TRS = strcat(buffer_TRS," The king");
+    char *name = calloc(MAX_LENGTH, sizeof(char));
+    printf("You name?");
+    fgets(name, MAX_LENGTH-1, stdin);
+    buffer_TRS = strcat(buffer_TRS," ");
+    buffer_TRS = strcat(buffer_TRS,name);
     buffer_TRS = strcat(buffer_TRS,"\0");
     n = SendSomething(&Father, (char *) buffer_TRS);
+    //Free the name's buffer
+    free(name);
 
     //loop
     while(1){
