@@ -1,6 +1,8 @@
 import subprocess
 import os
 
+powershellfilename = "1.ps1"
+
 def execute_command(command):
     if len(command) > 0:
         print(command)
@@ -17,6 +19,7 @@ def getMYIP():
             #print(line)
             ips.append(line)
     return ips
+
 
 def GetAllPossibleIPs1(ips):
     ips2 = []
@@ -50,8 +53,8 @@ def main():
     ips2 = GetAllPossibleIPs1(ips)
     all = GetAllPossibleIPs2(ips2)
     save(all)
-    os.system("Powershell -ExecutionPolicy ByPass -File 1.ps1")
+    os.system("Powershell -ExecutionPolicy ByPass -File "+powershellfilename)
     print("Print")
-    
+
 if __name__ == '__main__':
     main()
