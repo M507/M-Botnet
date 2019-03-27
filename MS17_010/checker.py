@@ -78,7 +78,6 @@ def check(target):
 		except smbconnection.SessionError as e:
 			print('{}: {}'.format(pipe_name, nt_errors.ERROR_MESSAGES[e.error][0]))
 
-
 	conn.disconnect_tree(tid)
 	conn.logoff()
 	conn.get_socket().close()
