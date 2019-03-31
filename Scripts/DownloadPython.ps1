@@ -18,23 +18,39 @@ function get_wget {
 }
 
 
-$wgetBinLocation = get_wget
+
+function download_file_and_install($url,$name,$wgetBinLocation){
 
 1..1 | % {
 # Downlaod
-$filename = "$_" + ".msi"
+$filename = "$_" + $name
 $Location = '' + $save_dir + '\' + $filename;
-Start-Process -FilePath $wgetBinLocation -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O $Location" -passthru -NoNewWindow -Wait
+Start-Process -FilePath $wgetBinLocation -Args " $url -O $Location" -passthru -NoNewWindow -Wait
 # Install
 Start-Process -FilePath "msiexec.exe"  -Args "/a $Location /qb TARGETDIR=C:\python27" -passthru -NoNewWindow -Wait
+        }
 }
 
+$wgetBinLocation = get_wget
+#download_file_and_install "https://www.python.org/ftp/python/2.7/python-2.7.msi" "p.msi" $wgetBinLocation
+#https://www.python.org/ftp/python/2.7.16/python-2.7.16.msi
+download_file_and_install "https://www.python.org/ftp/python/2.7.16/python-2.7.16.msi" "p.msi" $wgetBinLocation
+
+# Get pip to download and install impacket
+# Download get-pip
+$Location = '' + $save_dir + '\' + 'get-pip.py';
+Start-Process -FilePath $wgetBinLocation -Args " https://bootstrap.pypa.io/get-pip.py -O $Location" -passthru -NoNewWindow -Wait
+
+python $Location
+python -m pip  install impacket
 
 
 #$filename = "wget.exe"
 #$Location = '' + $save_dir + '\' + $filename;
-#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\2.msi" -passthru -NoNewWindow -Wait -WindowStyle hidden
-#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\3.msi" -passthru -NoNewWindow -Wait -WindowStyle hidden
+#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\2.msi
+" -passthru -NoNewWindow -Wait -WindowStyle hidden
+#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\3.msi
+" -passthru -NoNewWindow -Wait -WindowStyle hidden
 
 #Start-Process -FilePath "msiexec.exe"  -Args "/a $Location /qb TARGETDIR=C:\python27" -passthru -NoNewWindow -Wait
 #Start-Process -FilePath "msiexec.exe"  -Args "/a C:\Windows\Temp\2.msi /qb TARGETDIR=C:\python27" -passthru -NoNewWindow -Wait
