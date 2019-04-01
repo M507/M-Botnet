@@ -56,5 +56,4 @@ def main():
     os.system("Powershell -ExecutionPolicy ByPass -File "+powershellfilename)
     print("Print")
 
-if __name__ == '__main__':
-    main()
+main()
