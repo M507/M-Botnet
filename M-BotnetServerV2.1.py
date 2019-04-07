@@ -303,20 +303,28 @@ def optionsHandler():
     #
     proc = execute_command("ls "+HTTPServerOptionLocation)
     # Pyhton3 .decode("utf-8") to proc.communicate()[0] since it will return b'sting'
-    stdout = str(proc.communicate()[0].decode("utf-8")).split(' ')
-    options = stdout
-    print("Print all options")
+    options = str(proc.communicate()[0].decode("utf-8")).split(' ')
+    # Put all options in a list
+    lsitOfOptions = []
     for option in options:
-        print(option)
-
+        lsitOfOptions.append(option)
+    
     while True:
         try:
+            print("Print all options")
+            for option in options:
+                print(option)
             # Get input
             filename = s_input("Options:~")
             towho = s_input("Enter a port or all:~")
+            list()
+            print("Choose one of the ports or all")
             bot = find_bot(towho)
             if len(bot) <= 0:
                 bot = None
+            if filename not in lsitOfOptions:
+                print("Choose another option")
+                continue
             # If it's exit get out
             if filename == 'exit':
                 return
