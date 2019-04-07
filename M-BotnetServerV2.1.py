@@ -524,6 +524,8 @@ def console():
             ping()
         elif Command == "exploits" or Command == "EXPLOITS" or Command == "EXP" or Command == "exp":
             listExploits()
+        elif Command == "options" or Command == "Options":
+            optionsHandler()
         elif Command == "exit":
             break
         else:
@@ -555,6 +557,7 @@ def mainSockFun(consoleT,mainSock):
     mainSock.close()
 
 def main():
+    print("Start httpd!")
     global bots
     mainSock = start_listing(port)
     pingSock = start_listing(pingPort)
