@@ -302,7 +302,8 @@ def optionsHandler():
     # list all options u have at HTTPServerOptionLocation
     #
     proc = execute_command("ls "+HTTPServerOptionLocation)
-    stdout = proc.communicate()[0].split(' ')
+    # Pyhton3 .decode("utf-8") to proc.communicate()[0] since it will return b'sting'
+    stdout = str(proc.communicate()[0].decode("utf-8")).split(' ')
     options = stdout
     print("Print all options")
     for option in options:
