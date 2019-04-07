@@ -1,0 +1,27 @@
+
+cmd /c 'for /f "tokens=3*" %A in ("tmp%\1.txt") do ( netsh advfirewall firewall delete rule Name="%A %B" >nul 2>&1)'
+cmd /c 'for /f "tokens=3*" %A in ('type "%tmp%\1.txt"') do ( netsh advfirewall firewall delete rule Name="%A %B" >nul 2>&1)'
+
+$s = 'netsh advfirewall firewall delete rule Name='+$r+' >nul 2>&1'
+cmd /c $s
+
+$stg = 'for /f "tokens=3*" %A in ('+$r+') do ( netsh advfirewall firewall delete rule Name="%A %B" >nul 2>&1)'
+cmd /c $stg
+
+Start-Process -FilePath "cmd.exe"  -Args $stg
+
+cmd /c ''
+cmd /c ''
+cmd /c ''
+cmd /c ''
+
+
+# for /f "tokens=3*" %A in ('type "%tmp%\1.txt"') do ( netsh advfirewall firewall delete rule Name="%A %B" >nul 2>&1)
+
+# for /f "tokens=3*" in (`type %tmp%\1.txt) do ( netsh advfirewall firewall delete rule Name="%%A %%B" >nul 2>&1)
+
+
+# reset the shit out of it
+# netsh advfirewall reset
+# Stop the firewall
+# netsh advfirewall set allprofiles state off

