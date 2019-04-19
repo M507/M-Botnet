@@ -2,6 +2,7 @@ import datetime
 
 class Bot:
     def __init__(self, conn,addr):
+        self.connectToMe = 1
         self.conn = conn
         self.addr = addr
         self.port = conn.getpeername()[1]
@@ -27,3 +28,9 @@ class Bot:
 
     def restartTimer(self):
         self.lastTimeOnline = datetime.datetime.now().strftime("%I%M%S")
+
+    def getConnectToME(self):
+        return self.connectToMe
+
+    def setConnectToME(self,value):
+        self.connectToMe = value

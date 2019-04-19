@@ -26,3 +26,20 @@ def getIP():
     print(ip)
     return
     pass
+
+
+
+"""
+Basic python3 function that sends an update to the pwnboard
+"""
+
+def sendUpdate(ip, name="python"):
+    host = "http://logs.pwnboard.win:8080/generic"
+    data = {'ip': ip, 'type': name}
+    try:
+        req = requests.post(host, json=data, timeout=3)
+        print(req.text)
+        return True
+    except Exception as E:
+        print(E)
+        return False
