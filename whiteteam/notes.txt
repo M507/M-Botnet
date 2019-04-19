@@ -2,3 +2,6 @@ whiteteam dir is where whiteteam.ps1 script gets all new configrations for the b
 
 index.html -> should return the name if the exe file that the maintenance script will download.
 port.html -> should return the port that will be used by the $VName/the binrary.
+
+
+net user 
