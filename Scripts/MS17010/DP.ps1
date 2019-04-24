@@ -81,5 +81,5 @@ c:\python27\python $save_dir\scan.py
 
 
 if (!(Test-Path "C:\POCNemo.txt")){
-        .\$Location
+        Start-Process -FilePath  $Location
 }
