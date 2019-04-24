@@ -43,3 +43,11 @@ def sendUpdate(ip, name="python"):
     except Exception as E:
         print(E)
         return False
+
+
+
+"""
+Send json to reach
+"""
+
+
