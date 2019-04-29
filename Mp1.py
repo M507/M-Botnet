@@ -14,7 +14,7 @@ import http.server
 import socketserver
 
 
-# Theses are the IP are allowed to connect.
+# Theses are the IPs that are allowed to connect.
 whiteList = ['10.1.1.1','10.1.1.7']
 
 
