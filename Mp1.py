@@ -4,7 +4,6 @@
 
 
 import MS17_010
-from exploits import *
 from Utilities import *
 import socket
 import threading
